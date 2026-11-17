@@ -57,9 +57,9 @@ function lst(){var h='<input id="s" type="search" placeholder="Verb, Präpositio
 function rl(){var t=s.toLowerCase().trim(),r=E.filter(function(e){return(!f||e.p===f)&&(!t||e.v.toLowerCase().indexOf(t)>=0||e.p===t||e.a.indexOf(t)>=0)}).sort(function(a,b){return a.v.replace("sich ","").localeCompare(b.v.replace("sich ",""),"de")});
  $("ls").innerHTML=r.length?r.map(function(e){return '<div class="li" style="display:block"><div class="row"><b>'+e.v+(M[e.v]?' <span class="g">✓</span>':'')+'</b><span><span class="b">'+e.p+'</span> <span class="k">+ '+KN[e.k]+'</span></span></div><div dir="rtl" style="color:var(--ac)">'+e.a+'</div><div class="k">'+e.x+'</div></div>'}).join(""):'<span class="k">Keine Treffer.</span>'}
 var sel=[];
-function m2(){return '<div class="cd"><div class="k">Zwei Präpositionen kombinieren (wähle 2)</div><div class="chips" style="margin-top:10px">'+P.map(function(p){return '<button class="'+(sel.indexOf(p)>=0?"on":"")+'" onclick="tg2(\''+p+'\')">'+p+'</button>'}).join("")+'</div><button class="p" '+(sel.length===2?'':'disabled')+' onclick="begin2()">Start: '+(sel.length===2?sel.join(" + "):"…")+'</button></div>'}
-function tg2(p){var i=sel.indexOf(p);if(i>=0)sel.splice(i,1);else{if(sel.length===2)sel.shift();sel.push(p)}menu()}
-function begin2(){var a=sel.slice(),l=sh(N.filter(function(n){return V[n].some(function(e){return a.indexOf(e.p)>=0})})).slice(0,15);q={l:l,n:l.length,sc:"",two:a,i:0,ok:0,bad:[],rt:{},o:null,ph:1};qr()}
+function m2(){return '<div class="cd"><div class="k">Mehrere Präpositionen kombinieren (wähle 2 oder mehr)</div><div class="chips" style="margin-top:10px">'+P.map(function(p){return '<button class="'+(sel.indexOf(p)>=0?"on":"")+'" onclick="tg2(\''+p+'\')">'+p+'</button>'}).join("")+'</div><button class="p" '+(sel.length>=2?'':'disabled')+' onclick="begin2()">Start: '+(sel.length>=2?sel.join(" + "):"…")+'</button></div>'}
+function tg2(p){var i=sel.indexOf(p);if(i>=0)sel.splice(i,1);else{sel.push(p)}menu()}
+function begin2(){var a=sel.slice(),l=sh(N.filter(function(n){return V[n].some(function(e){return a.indexOf(e.p)>=0})})).slice(0,Math.min(25,5*a.length+5));q={l:l,n:l.length,sc:"",two:a,i:0,ok:0,bad:[],rt:{},o:null,ph:1};qr()}
 function menu(){$("app").innerHTML=m2()+'<div class="cd"><div class="k">Wähle einen Übungsbereich</div><button class="p" style="margin:10px 0;width:100%" onclick="begin(\'\')">Allgemeine Übung · alle Präpositionen</button><div class="chips">'+P.map(function(p){return '<button onclick="begin(\''+p+'\')">'+p+' <span class="k">'+C[p]+'</span></button>'}).join("")+'</div></div>'}
 function begin(sc){sc=sc||"";var l;
  if(sc){var vl=N.filter(function(n){return V[n].some(function(e){return e.p===sc})}),iv=N.filter(function(n){return vl.indexOf(n)<0});l=sh(sh(vl).slice(0,10).concat(sh(iv).slice(0,Math.min(4,Math.ceil(vl.length/2)+1))))}
@@ -68,7 +68,7 @@ function begin(sc){sc=sc||"";var l;
 function qr(){if(q.i>=q.l.length){return end()}
  var n=q.l[q.i],ok=V[n].map(function(e){return e.p});
  if(!q.o||q.o.n!==n){var d=sh(P.filter(function(p){return ok.indexOf(p)<0})).slice(0,5);q.o={n:n,opts:q.two?sh(q.two.slice()):sh([ok[Math.floor(Math.random()*ok.length)]].concat(d))};q.ph=1}
- var h='<div class="pg"><i style="width:'+Math.round(q.i*100/q.l.length)+'%"></i></div><div class="cd"><div class="k">'+(q.i+1)+'/'+q.l.length+' · '+(q.sc?'Bereich '+q.sc:q.two?q.two.join(' oder '):'Welche Präposition?')+'</div><div class="v">'+(q.sc?'Passt „'+q.sc+'“ zu „'+n+'“?':n+' …')+'</div>';
+ var h='<div class="pg"><i style="width:'+Math.round(q.i*100/q.l.length)+'%"></i></div><div class="cd"><div class="k">'+(q.i+1)+'/'+q.l.length+' · '+(q.sc?'Bereich '+q.sc:q.two?q.two.join(' / '):'Welche Präposition?')+'</div><div class="v">'+(q.sc?'Passt „'+q.sc+'“ zu „'+n+'“?':n+' …')+'</div>';
  if(q.ph===1&&q.sc)h+='<div class="o"><button onclick="ja(true)">Ja</button><button onclick="ja(false)">Nein</button></div>';else if(q.ph===1)h+='<div class="o">'+q.o.opts.map(function(p){return '<button onclick="pick(\''+p+'\')">'+p+'</button>'}).join("")+'</div>';
  else h+='<div class="k">'+q.pk+' → welcher Kasus?</div><div class="o"><button onclick="kas(\'A\')">Akkusativ</button><button onclick="kas(\'D\')">Dativ</button></div>';
  $("app").innerHTML=h+'</div>'}
