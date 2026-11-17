@@ -56,15 +56,19 @@ function lst(){var h='<input id="s" type="search" placeholder="Verb, Präpositio
  $("app").innerHTML=h;rl()}
 function rl(){var t=s.toLowerCase().trim(),r=E.filter(function(e){return(!f||e.p===f)&&(!t||e.v.toLowerCase().indexOf(t)>=0||e.p===t||e.a.indexOf(t)>=0)}).sort(function(a,b){return a.v.replace("sich ","").localeCompare(b.v.replace("sich ",""),"de")});
  $("ls").innerHTML=r.length?r.map(function(e){return '<div class="li" style="display:block"><div class="row"><b>'+e.v+(M[e.v]?' <span class="g">✓</span>':'')+'</b><span><span class="b">'+e.p+'</span> <span class="k">+ '+KN[e.k]+'</span></span></div><div dir="rtl" style="color:var(--ac)">'+e.a+'</div><div class="k">'+e.x+'</div></div>'}).join(""):'<span class="k">Keine Treffer.</span>'}
-function menu(){$("app").innerHTML='<div class="cd"><div class="k">Wähle einen Übungsbereich</div><button class="p" style="margin:10px 0;width:100%" onclick="begin(\'\')">Allgemeine Übung · alle Präpositionen</button><div class="chips">'+P.map(function(p){return '<button onclick="begin(\''+p+'\')">'+p+' <span class="k">'+C[p]+'</span></button>'}).join("")+'</div></div>'}
+var sel=[];
+function m2(){return '<div class="cd"><div class="k">Zwei Präpositionen kombinieren (wähle 2)</div><div class="chips" style="margin-top:10px">'+P.map(function(p){return '<button class="'+(sel.indexOf(p)>=0?"on":"")+'" onclick="tg2(\''+p+'\')">'+p+'</button>'}).join("")+'</div><button class="p" '+(sel.length===2?'':'disabled')+' onclick="begin2()">Start: '+(sel.length===2?sel.join(" + "):"…")+'</button></div>'}
+function tg2(p){var i=sel.indexOf(p);if(i>=0)sel.splice(i,1);else{if(sel.length===2)sel.shift();sel.push(p)}menu()}
+function begin2(){var a=sel.slice(),l=sh(N.filter(function(n){return V[n].some(function(e){return a.indexOf(e.p)>=0})})).slice(0,15);q={l:l,n:l.length,sc:"",two:a,i:0,ok:0,bad:[],rt:{},o:null,ph:1};qr()}
+function menu(){$("app").innerHTML=m2()+'<div class="cd"><div class="k">Wähle einen Übungsbereich</div><button class="p" style="margin:10px 0;width:100%" onclick="begin(\'\')">Allgemeine Übung · alle Präpositionen</button><div class="chips">'+P.map(function(p){return '<button onclick="begin(\''+p+'\')">'+p+' <span class="k">'+C[p]+'</span></button>'}).join("")+'</div></div>'}
 function begin(sc){sc=sc||"";var l;
  if(sc){var vl=N.filter(function(n){return V[n].some(function(e){return e.p===sc})}),iv=N.filter(function(n){return vl.indexOf(n)<0});l=sh(sh(vl).slice(0,10).concat(sh(iv).slice(0,Math.min(4,Math.ceil(vl.length/2)+1))))}
  else l=sh(N.filter(function(n){return !M[n]})).concat(sh(N.filter(function(n){return M[n]}))).slice(0,15);
  q={l:l,n:l.length,sc:sc,i:0,ok:0,bad:[],rt:{},o:null,ph:1};qr()}
 function qr(){if(q.i>=q.l.length){return end()}
  var n=q.l[q.i],ok=V[n].map(function(e){return e.p});
- if(!q.o||q.o.n!==n){var d=sh(P.filter(function(p){return ok.indexOf(p)<0})).slice(0,5);q.o={n:n,opts:sh([ok[Math.floor(Math.random()*ok.length)]].concat(d))};q.ph=1}
- var h='<div class="pg"><i style="width:'+Math.round(q.i*100/q.l.length)+'%"></i></div><div class="cd"><div class="k">'+(q.i+1)+'/'+q.l.length+' · '+(q.sc?'Bereich '+q.sc:'Welche Präposition?')+'</div><div class="v">'+(q.sc?'Passt „'+q.sc+'“ zu „'+n+'“?':n+' …')+'</div>';
+ if(!q.o||q.o.n!==n){var d=sh(P.filter(function(p){return ok.indexOf(p)<0})).slice(0,5);q.o={n:n,opts:q.two?sh(q.two.slice()):sh([ok[Math.floor(Math.random()*ok.length)]].concat(d))};q.ph=1}
+ var h='<div class="pg"><i style="width:'+Math.round(q.i*100/q.l.length)+'%"></i></div><div class="cd"><div class="k">'+(q.i+1)+'/'+q.l.length+' · '+(q.sc?'Bereich '+q.sc:q.two?q.two.join(' oder '):'Welche Präposition?')+'</div><div class="v">'+(q.sc?'Passt „'+q.sc+'“ zu „'+n+'“?':n+' …')+'</div>';
  if(q.ph===1&&q.sc)h+='<div class="o"><button onclick="ja(true)">Ja</button><button onclick="ja(false)">Nein</button></div>';else if(q.ph===1)h+='<div class="o">'+q.o.opts.map(function(p){return '<button onclick="pick(\''+p+'\')">'+p+'</button>'}).join("")+'</div>';
  else h+='<div class="k">'+q.pk+' → welcher Kasus?</div><div class="o"><button onclick="kas(\'A\')">Akkusativ</button><button onclick="kas(\'D\')">Dativ</button></div>';
  $("app").innerHTML=h+'</div>'}
@@ -74,12 +78,12 @@ function ja(y){var n=q.o.n,e=V[n].filter(function(x){return x.p===q.sc})[0];
  if(e&&y){q.pk=q.sc;q.ck=e.k;q.ph=2;qr()}else if(e)done(false,"Nein");
  else done(!y,y?"Ja (falsch)":"Nein, passt nicht")}
 function done(ok,g){var n=q.o.n,first=!q.rt[n];
- var cn=!q.sc||V[n].some(function(e){return e.p===q.sc});if(ok){if(cn)M[n]=1;if(first)q.ok++}else{if(cn)delete M[n];if(first){q.bad.push([n,g]);q.rt[n]=1;q.l.push(n)}}
+ var cn=!q.two&&(!q.sc||V[n].some(function(e){return e.p===q.sc}));if(ok){if(cn)M[n]=1;if(first)q.ok++}else{if(cn)delete M[n];if(first){q.bad.push([n,g]);q.rt[n]=1;q.l.push(n)}}
  sv();stat();
  var all=V[n].map(function(e){return '<div style="margin:6px 0"><b>'+e.p+' + '+KN[e.k]+'</b> · <span dir="rtl">'+e.a+'</span><div class="k">'+e.x+'</div></div>'}).join("");
  $("app").innerHTML='<div class="cd"><div class="v">'+n+'</div><div class="'+(ok?"g":"r")+'"><b>'+(ok?"Richtig":"Falsch")+'</b> · '+g+'</div><div>'+all+'</div><br><button class="p" onclick="q.i++;q.o=null;qr()">Weiter</button></div>'}
 function end(){var n=q.n,p=Math.round(q.ok*100/n);
- $("app").innerHTML='<div class="cd"><div class="v">'+q.ok+'/'+n+' · '+p+'%</div>'+(q.bad.length?'<div class="k">Fehlerbericht: '+q.bad.length+' von '+n+' beim ersten Versuch falsch</div>'+q.bad.map(function(b){return '<div class="li" style="display:block"><b>'+b[0]+'</b><div class="r">Deine Antwort: '+b[1]+'</div>'+V[b[0]].map(function(e){return '<div><span class="g"><b>Richtig: '+e.p+' + '+KN[e.k]+'</b></span> · '+e.a+'<div class="k">'+e.x+'</div></div>'}).join("")+'</div>'}).join(""):'<p class="g">Alles richtig.</p>')+'<br><button class="p" onclick="begin(q.sc)">Neue Runde</button> <button onclick="menu()">Bereiche</button></div>'}
+ $("app").innerHTML='<div class="cd"><div class="v">'+q.ok+'/'+n+' · '+p+'%</div>'+(q.bad.length?'<div class="k">Fehlerbericht: '+q.bad.length+' von '+n+' beim ersten Versuch falsch</div>'+q.bad.map(function(b){return '<div class="li" style="display:block"><b>'+b[0]+'</b><div class="r">Deine Antwort: '+b[1]+'</div>'+V[b[0]].map(function(e){return '<div><span class="g"><b>Richtig: '+e.p+' + '+KN[e.k]+'</b></span> · '+e.a+'<div class="k">'+e.x+'</div></div>'}).join("")+'</div>'}).join(""):'<p class="g">Alles richtig.</p>')+'<br><button class="p" onclick="q.two?begin2():begin(q.sc)">Neue Runde</button> <button onclick="menu()">Bereiche</button></div>'}
 stat();lst();
 </script>
 </body>
